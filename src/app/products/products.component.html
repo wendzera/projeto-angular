@@ -1,11 +1,47 @@
-<h2>Lista de Produtos</h2>
+<div class="header-section">
+  <h2>Lista de Produtos</h2>
+  <div class="header-actions">
+    <button mat-stroked-button routerLink="/" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+      Voltar
+    </button>
+    <button mat-raised-button color="primary" (click)="openDialog()" class="add-button">
+      <mat-icon>add</mat-icon>
+      Adicionar Produto
+    </button>
+    <button mat-raised-button color="warn" (click)="logout()" class="logout-button">
+      <mat-icon>exit_to_app</mat-icon>
+      Sair
+    </button>
+  </div>
+</div>
 
 <table mat-table [dataSource]="products" class="mat-elevation-z8 full-width">
+
+  <!-- Imagem -->
+  <ng-container matColumnDef="image">
+    <th mat-header-cell *matHeaderCellDef> Imagem </th>
+    <td mat-cell *matCellDef="let product">
+      <img 
+        [src]="product.imageUrl || 'https://via.placeholder.com/60?text=Sem+Imagem'" 
+        alt="{{product.name}}"
+        class="product-image"
+        (error)="onImageError($event)">
+    </td>
+  </ng-container>
 
   <!-- Nome -->
   <ng-container matColumnDef="name">
     <th mat-header-cell *matHeaderCellDef> Nome </th>
     <td mat-cell *matCellDef="let product"> {{product.name}} </td>
+  </ng-container>
+
+  <!-- Descrição -->
+  <ng-container matColumnDef="description">
+    <th mat-header-cell *matHeaderCellDef> Descrição </th>
+    <td mat-cell *matCellDef="let product" class="description-cell"> 
+      {{product.description || '-'}} 
+    </td>
   </ng-container>
 
   <!-- Preço -->
@@ -18,15 +54,15 @@
   <ng-container matColumnDef="actions">
     <th mat-header-cell *matHeaderCellDef> Ações </th>
     <td mat-cell *matCellDef="let product">
-      <button mat-button color="primary" (click)="openDialog(product)">Editar</button>
-      <button mat-button color="warn" (click)="deleteProduct(product.id!)">Excluir</button>
+      <button mat-icon-button color="primary" (click)="openDialog(product)" matTooltip="Editar">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button mat-icon-button color="warn" (click)="deleteProduct(product.id!)" matTooltip="Excluir">
+        <mat-icon>delete</mat-icon>
+      </button>
     </td>
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
   <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 </table>
-
-<button mat-raised-button color="primary" (click)="openDialog()">
-  Adicionar Produto
-</button>

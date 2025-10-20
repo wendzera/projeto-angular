@@ -1,16 +1,60 @@
 import { Injectable, signal } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { Product } from '../models/product';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
   private supabase: SupabaseClient;
+  
+  // Produtos
   products = signal<Product[]>([]);
+  
+  // Usuário logado
+  user = signal<User | null>(null);
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+    
+    // Inicializa usuário (versão atualizada)
+    this.initSession().catch(err => console.error('Erro ao inicializar sessão:', err));
+
+    // Observa mudanças de autenticação
+    this.supabase.auth.onAuthStateChange((_event, session) => {
+      this.user.set(session?.user ?? null);
+    });
   }
+  
+  // Inicializa a sessão do usuário
+  private async initSession() {
+    const { data } = await this.supabase.auth.getSession();
+    this.user.set(data.session?.user ?? null);
+  }
+
+  // -------------------------
+  // Auth
+  // -------------------------
+
+  async login(email: string, password: string) {
+    const { data, error } = await this.supabase.auth.signInWithPassword({ 
+      email, 
+      password 
+    });
+    
+    if (error) throw error;
+    this.user.set(data.user);
+    return data.user;
+  }
+
+  async logout() {
+    const { error } = await this.supabase.auth.signOut();
+    if (error) throw error;
+    this.user.set(null);
+  }
+
+  // -------------------------
+  // Produtos (CRUD)
+  // -------------------------
 
   async loadProducts() {
     const { data, error } = await this.supabase

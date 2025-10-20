@@ -1,4 +1,4 @@
-<h1 mat-dialog-title>Produto</h1>
+<h1 mat-dialog-title style="font-weight: 400; font-size: 24px; color: #1a1a1a; letter-spacing: -0.5px; padding: 32px 32px 0 32px;">Produto</h1>
 
 <div mat-dialog-content>
   <mat-form-field appearance="outline" class="full-width">
@@ -15,6 +15,17 @@
     <mat-label>Preço</mat-label>
     <input matInput type="number" [(ngModel)]="data.product.price">
   </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>URL da Imagem</mat-label>
+    <input matInput [(ngModel)]="data.product.imageUrl" placeholder="https://exemplo.com/imagem.jpg">
+  </mat-form-field>
+
+  <!-- Preview da Imagem -->
+  <div class="image-preview" *ngIf="data.product.imageUrl">
+    <p class="preview-label">Preview:</p>
+    <img [src]="data.product.imageUrl" alt="Preview do produto" (error)="onImageError($event)">
+  </div>
 </div>
 
 <div mat-dialog-actions align="end">

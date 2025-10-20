@@ -1,0 +1,38 @@
+<div class="home-container">
+  <div class="hero-section">
+    <div class="header-actions">
+      <button 
+        mat-raised-button 
+        color="warn" 
+        class="logout-button"
+        (click)="logout()">
+        <mat-icon>exit_to_app</mat-icon>
+        Sair
+      </button>
+    </div>
+    <mat-icon class="hero-icon">dashboard</mat-icon>
+    <h1>Dashboard de Produtos</h1>
+    <p class="subtitle">Sistema de gerenciamento integrado com Supabase</p>
+  </div>
+
+  <div class="features-grid">
+    <mat-card *ngFor="let feature of features" class="feature-card">
+      <mat-card-header>
+        <mat-icon class="feature-icon">{{feature.icon}}</mat-icon>
+      </mat-card-header>
+      <mat-card-content>
+        <h2>{{feature.title}}</h2>
+        <p>{{feature.description}}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          [routerLink]="feature.route">
+          <mat-icon>arrow_forward</mat-icon>
+          Acessar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

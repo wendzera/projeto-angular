@@ -1,4 +1,5 @@
 import { Component, Inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,7 +10,7 @@ import { Product } from '../models/product';
 @Component({
   selector: 'app-product-dialog',
   standalone: true,
-  imports: [FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule],
   templateUrl: './product-dialog.component.html',
   styleUrls: ['./product-dialog.component.css']
 })
@@ -25,5 +26,10 @@ export class ProductDialogComponent {
 
   onSave(): void {
     this.dialogRef.close(this.data.product);
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'https://via.placeholder.com/150?text=Imagem+Indisponível';
   }
 }
