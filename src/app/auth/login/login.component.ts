@@ -30,4 +30,8 @@ export class LoginComponent {
       this.loading = false;
     }
   }
+
+  goToRegister() {
+    this.router.navigate(['/register']);
+  }
 }
