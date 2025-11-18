@@ -1,0 +1,200 @@
+.dialog-container {
+  max-height: 80vh;
+}
+
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #3f51b5;
+  margin: 0;
+  padding: 20px 24px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+mat-dialog-content {
+  padding: 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.summary-section,
+.delivery-section,
+.totals-section {
+  margin-bottom: 20px;
+}
+
+h3 {
+  margin: 0 0 15px 0;
+  color: #555;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Items List */
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.item-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-name {
+  font-weight: 500;
+  color: #333;
+  font-size: 15px;
+}
+
+.item-quantity {
+  font-size: 13px;
+  color: #666;
+}
+
+.item-unit-price {
+  font-size: 13px;
+  color: #3f51b5;
+}
+
+.item-total {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4caf50;
+  min-width: 100px;
+  text-align: right;
+}
+
+/* Delivery Section */
+.delivery-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+.info-row mat-icon {
+  color: #3f51b5;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.free-freight {
+  color: #4caf50 !important;
+  font-weight: 600;
+}
+
+/* Totals Section */
+.totals-section {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 15px;
+}
+
+.final-total {
+  font-size: 20px;
+  color: #333;
+  padding-top: 15px;
+  margin-top: 10px;
+}
+
+/* Confirmation Message */
+.confirmation-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.confirmation-message mat-icon {
+  color: #2196f3;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.confirmation-message p {
+  margin: 0;
+  font-size: 16px;
+  color: #1976d2;
+  font-weight: 500;
+}
+
+/* Dialog Actions */
+mat-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  margin: 0;
+}
+
+mat-dialog-actions button {
+  min-width: 120px;
+}
+
+mat-divider {
+  margin: 20px 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .item-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .item-total {
+    text-align: left;
+  }
+
+  mat-dialog-actions {
+    flex-direction: column;
+  }
+
+  mat-dialog-actions button {
+    width: 100%;
+  }
+}

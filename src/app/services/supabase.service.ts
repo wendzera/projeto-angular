@@ -49,10 +49,28 @@ export class SupabaseService {
   async register(email: string, password: string) {
     const { data, error } = await this.supabase.auth.signUp({ 
       email, 
-      password 
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {
+          email_confirmed: true // Confirma email automaticamente
+        }
+      }
     });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase signup error:', error);
+      throw error;
+    }
+    
+    // Verifica se o usuário foi criado com sucesso
+    if (!data.user) {
+      throw new Error('Erro ao criar usuário. Tente novamente.');
+    }
+    
+    console.log('Usuário criado:', data.user);
+    console.log('Session:', data.session);
+    
     return data.user;
   }
 

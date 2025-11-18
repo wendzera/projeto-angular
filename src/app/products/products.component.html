@@ -9,6 +9,10 @@
       <mat-icon>add</mat-icon>
       Adicionar Produto
     </button>
+    <button mat-raised-button color="accent" routerLink="/cart" class="cart-button">
+      <mat-icon [matBadge]="cartItemCount" matBadgeColor="warn" [matBadgeHidden]="cartItemCount === 0">shopping_cart</mat-icon>
+      Carrinho
+    </button>
     <button mat-raised-button color="warn" (click)="logout()" class="logout-button">
       <mat-icon>exit_to_app</mat-icon>
       Sair
@@ -59,6 +63,9 @@
       </button>
       <button mat-icon-button color="warn" (click)="deleteProduct(product.id!)" matTooltip="Excluir">
         <mat-icon>delete</mat-icon>
+      </button>
+      <button mat-icon-button color="accent" (click)="addToCart(product)" matTooltip="Adicionar ao carrinho">
+        <mat-icon>add_shopping_cart</mat-icon>
       </button>
     </td>
   </ng-container>

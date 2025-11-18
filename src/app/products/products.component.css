@@ -62,7 +62,7 @@ h2 {
   font-weight: 400;
 }
 
-.add-button, .logout-button, .back-button {
+.add-button, .logout-button, .back-button, .cart-button {
   height: 44px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -70,8 +70,12 @@ h2 {
   transition: all 0.3s ease;
 }
 
-.add-button mat-icon, .logout-button mat-icon, .back-button mat-icon {
+.add-button mat-icon, .logout-button mat-icon, .back-button mat-icon, .cart-button mat-icon {
   margin-right: 6px;
+}
+
+.cart-button {
+  position: relative;
 }
 
 .back-button {
@@ -145,6 +149,7 @@ h2 {
 
   .back-button,
   .add-button,
+  .cart-button,
   .logout-button {
     width: 100%;
   }

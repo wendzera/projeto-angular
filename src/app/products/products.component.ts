@@ -6,20 +6,23 @@ import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatBadgeModule } from '@angular/material/badge';
 import { SupabaseService } from '../services/supabase.service';
+import { CartService } from '../services/cart.service';
 import { Product } from '../models/product';
 import { ProductDialogComponent } from '../product-dialog/product-dialog.component';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatButtonModule, MatTableModule, MatIconModule, MatTooltipModule, MatDialogModule],
+  imports: [CommonModule, RouterModule, MatButtonModule, MatTableModule, MatIconModule, MatTooltipModule, MatDialogModule, MatBadgeModule],
   templateUrl: './products.component.html',
   styleUrls: ['./products.component.css']
 })
 export class ProductsComponent implements OnInit {
   displayedColumns: string[] = ['image', 'name', 'description', 'price', 'actions'];
   supabaseService = inject(SupabaseService);
+  cartService = inject(CartService);
   dialog = inject(MatDialog);
   router = inject(Router);
 
@@ -55,6 +58,14 @@ export class ProductsComponent implements OnInit {
     if (confirm('Tem certeza que deseja excluir este produto?')) {
       this.supabaseService.deleteProduct(id);
     }
+  }
+
+  addToCart(product: Product) {
+    this.cartService.addToCart(product);
+  }
+
+  get cartItemCount(): number {
+    return this.cartService.itemCount();
   }
 
   onImageError(event: Event): void {

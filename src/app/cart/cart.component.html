@@ -1,0 +1,140 @@
+<div class="cart-container">
+  <div class="header-section">
+    <h2>Carrinho de Compras</h2>
+    <div class="header-actions">
+      <button mat-stroked-button routerLink="/products" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+        Continuar Comprando
+      </button>
+    </div>
+  </div>
+
+  <div class="cart-content" *ngIf="items.length > 0; else emptyCart">
+    <!-- CEP Input -->
+    <mat-card class="cep-card">
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="cep-field">
+          <mat-label>CEP para cálculo do frete</mat-label>
+          <input 
+            matInput 
+            [(ngModel)]="cep" 
+            (ngModelChange)="onCepChange()"
+            placeholder="00000-000"
+            maxlength="9">
+          <mat-icon matSuffix>location_on</mat-icon>
+        </mat-form-field>
+        <p class="cep-info" *ngIf="hasCep">
+          <mat-icon>info</mat-icon>
+          Frete grátis para compras acima de R$ 100,00
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Cart Items -->
+    <div class="cart-items">
+      <mat-card class="cart-item" *ngFor="let item of items">
+        <div class="item-content">
+          <img 
+            [src]="item.product.imageUrl || 'https://via.placeholder.com/100?text=Sem+Imagem'" 
+            [alt]="item.product.name"
+            class="item-image"
+            (error)="onImageError($event)">
+          
+          <div class="item-details">
+            <h3>{{ item.product.name }}</h3>
+            <p class="item-description">{{ item.product.description || 'Sem descrição' }}</p>
+            <p class="item-price">{{ item.product.price | currency:'BRL' }} / unidade</p>
+          </div>
+
+          <div class="item-actions">
+            <div class="quantity-controls">
+              <button 
+                mat-icon-button 
+                color="primary" 
+                (click)="decrement(item.product.id!)"
+                [disabled]="item.quantity <= 1">
+                <mat-icon>remove</mat-icon>
+              </button>
+              <span class="quantity">{{ item.quantity }}</span>
+              <button 
+                mat-icon-button 
+                color="primary" 
+                (click)="increment(item.product.id!)">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+            
+            <div class="item-total">
+              <span class="total-label">Subtotal:</span>
+              <span class="total-value">{{ getItemTotal(item) | currency:'BRL' }}</span>
+            </div>
+
+            <button 
+              mat-icon-button 
+              color="warn" 
+              (click)="removeItem(item.product.id!)"
+              class="remove-button">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Order Summary -->
+    <mat-card class="order-summary">
+      <mat-card-header>
+        <mat-card-title>Resumo do Pedido</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="summary-row">
+          <span>Subtotal:</span>
+          <span>{{ subtotal | currency:'BRL' }}</span>
+        </div>
+        <div class="summary-row" *ngIf="hasCep">
+          <span>Frete:</span>
+          <span [class.free-freight]="freight === 0">
+            {{ freight === 0 ? 'GRÁTIS' : (freight | currency:'BRL') }}
+          </span>
+        </div>
+        <div class="summary-row" *ngIf="!hasCep">
+          <span class="cep-warning">
+            <mat-icon>warning</mat-icon>
+            Informe o CEP para calcular o frete
+          </span>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="summary-row total-row">
+          <span><strong>Total:</strong></span>
+          <span><strong>{{ total | currency:'BRL' }}</strong></span>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="openOrderSummary()"
+          class="checkout-button"
+          [disabled]="!hasCep">
+          <mat-icon>check_circle</mat-icon>
+          Finalizar Compra
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Empty Cart -->
+  <ng-template #emptyCart>
+    <mat-card class="empty-cart">
+      <mat-card-content>
+        <mat-icon class="empty-icon">shopping_cart</mat-icon>
+        <h3>Seu carrinho está vazio</h3>
+        <p>Adicione produtos para começar suas compras!</p>
+        <button mat-raised-button color="primary" routerLink="/products">
+          <mat-icon>shopping_bag</mat-icon>
+          Ver Produtos
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </ng-template>
+</div>

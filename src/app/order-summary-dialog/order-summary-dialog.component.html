@@ -1,0 +1,90 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>
+    <mat-icon>receipt_long</mat-icon>
+    Confirmação do Pedido
+  </h2>
+
+  <mat-dialog-content>
+    <div class="summary-section">
+      <h3>Itens do Pedido</h3>
+      <div class="items-list">
+        <div class="item-row" *ngFor="let item of data.items">
+          <img 
+            [src]="item.product.imageUrl || 'https://via.placeholder.com/60?text=Sem+Imagem'" 
+            [alt]="item.product.name"
+            class="item-image"
+            (error)="onImageError($event)">
+          <div class="item-info">
+            <span class="item-name">{{ item.product.name }}</span>
+            <span class="item-quantity">Quantidade: {{ item.quantity }}</span>
+            <span class="item-unit-price">{{ item.product.price | currency:'BRL' }} / un</span>
+          </div>
+          <div class="item-total">
+            {{ getItemTotal(item) | currency:'BRL' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="delivery-section">
+      <h3>Entrega</h3>
+      <div class="delivery-info">
+        <div class="info-row">
+          <mat-icon>location_on</mat-icon>
+          <span>CEP: {{ formatCep(data.cep) }}</span>
+        </div>
+        <div class="info-row">
+          <mat-icon>local_shipping</mat-icon>
+          <span>
+            Frete: 
+            <strong [class.free-freight]="data.freight === 0">
+              {{ data.freight === 0 ? 'GRÁTIS' : (data.freight | currency:'BRL') }}
+            </strong>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="totals-section">
+      <div class="total-row">
+        <span>Subtotal:</span>
+        <span>{{ data.subtotal | currency:'BRL' }}</span>
+      </div>
+      <div class="total-row">
+        <span>Frete:</span>
+        <span [class.free-freight]="data.freight === 0">
+          {{ data.freight === 0 ? 'GRÁTIS' : (data.freight | currency:'BRL') }}
+        </span>
+      </div>
+      <mat-divider></mat-divider>
+      <div class="total-row final-total">
+        <span><strong>Total:</strong></span>
+        <span><strong>{{ data.total | currency:'BRL' }}</strong></span>
+      </div>
+    </div>
+
+    <div class="confirmation-message">
+      <mat-icon>help_outline</mat-icon>
+      <p>Deseja confirmar este pedido?</p>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button mat-button (click)="cancelOrder()" color="warn">
+      <mat-icon>cancel</mat-icon>
+      Cancelar
+    </button>
+    <button mat-button (click)="continueShopping()">
+      <mat-icon>arrow_back</mat-icon>
+      Continuar Comprando
+    </button>
+    <button mat-raised-button (click)="confirmOrder()" color="primary">
+      <mat-icon>check_circle</mat-icon>
+      Confirmar Pedido
+    </button>
+  </mat-dialog-actions>
+</div>
