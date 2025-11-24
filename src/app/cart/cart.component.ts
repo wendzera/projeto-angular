@@ -9,7 +9,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CartService } from '../services/cart.service';
+import { SupabaseService } from '../services/supabase.service';
 import { CartItem } from '../models/cart-item';
 import { OrderSummaryDialogComponent } from '../order-summary-dialog/order-summary-dialog.component';
 
@@ -26,15 +28,19 @@ import { OrderSummaryDialogComponent } from '../order-summary-dialog/order-summa
     MatFormFieldModule,
     MatInputModule,
     MatDividerModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSnackBarModule
   ],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.css']
 })
 export class CartComponent {
   cartService = inject(CartService);
+  supabaseService = inject(SupabaseService);
   dialog = inject(MatDialog);
+  snackBar = inject(MatSnackBar);
   cep: string = '';
+  isProcessing = false;
 
   get items(): CartItem[] {
     return this.cartService.items();
@@ -60,17 +66,17 @@ export class CartComponent {
     return item.product.price * item.quantity;
   }
 
-  increment(productId: number): void {
-    this.cartService.incrementQuantity(productId);
+  async increment(productId: number): Promise<void> {
+    await this.cartService.incrementQuantity(productId);
   }
 
-  decrement(productId: number): void {
-    this.cartService.decrementQuantity(productId);
+  async decrement(productId: number): Promise<void> {
+    await this.cartService.decrementQuantity(productId);
   }
 
-  removeItem(productId: number): void {
+  async removeItem(productId: number): Promise<void> {
     if (confirm('Deseja remover este item do carrinho?')) {
-      this.cartService.removeItem(productId);
+      await this.cartService.removeItem(productId);
     }
   }
 
@@ -119,11 +125,62 @@ export class CartComponent {
     });
   }
 
-  finalizeOrder(): void {
-    // Here you would typically send the order to a backend/database
-    alert('Pedido finalizado com sucesso! Total: ' + this.total.toFixed(2));
-    this.cartService.clearCart();
-    this.cep = '';
+  async finalizeOrder(): Promise<void> {
+    if (this.isProcessing) return;
+
+    try {
+      this.isProcessing = true;
+
+      // Verifica se há usuário logado
+      const user = this.supabaseService.user();
+      if (!user) {
+        this.snackBar.open('Você precisa estar logado para finalizar o pedido', 'Fechar', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top'
+        });
+        return;
+      }
+
+      // Cria o pedido principal (isso automaticamente associa os itens do carrinho ao pedido)
+      const order = await this.supabaseService.createOrder({
+        total: this.total,
+        customer_name: user.email?.split('@')[0] || 'Cliente',
+        customer_email: user.email || '',
+        customer_phone: '',
+        customer_address: `CEP: ${this.formatCep(this.cartService.getCep())}`
+      });
+
+      // Sucesso!
+      this.snackBar.open(
+        `Pedido #${order.id} finalizado com sucesso! Total: R$ ${this.total.toFixed(2)}`,
+        'Fechar',
+        {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        }
+      );
+
+      // Recarrega o carrinho (que agora estará vazio pois os itens têm order_id)
+      await this.cartService.loadCart();
+      this.cep = '';
+    } catch (error: any) {
+      console.error('Erro ao finalizar pedido:', error);
+      this.snackBar.open(
+        'Erro ao finalizar pedido: ' + (error.message || 'Erro desconhecido'),
+        'Fechar',
+        {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        }
+      );
+    } finally {
+      this.isProcessing = false;
+    }
   }
 
   onImageError(event: Event): void {

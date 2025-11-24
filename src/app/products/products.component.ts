@@ -60,8 +60,35 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  addToCart(product: Product) {
-    this.cartService.addToCart(product);
+  async addToCart(product: Product) {
+    try {
+      // Verifica se está logado
+      if (!this.supabaseService.user()) {
+        alert('Você precisa estar logado para adicionar produtos ao carrinho.');
+        return;
+      }
+      
+      await this.cartService.addToCart(product);
+      alert('Produto adicionado ao carrinho com sucesso!');
+    } catch (error: any) {
+      console.error('Erro ao adicionar ao carrinho:', error);
+      
+      let mensagem = 'Erro ao adicionar produto ao carrinho.';
+      
+      if (error.message) {
+        mensagem += '\nDetalhes: ' + error.message;
+      }
+      
+      if (error.message?.includes('relation "order_items" does not exist')) {
+        mensagem = 'A tabela do carrinho não foi criada ainda.\nPor favor, execute o script fix-cart-table.sql no Supabase.';
+      } else if (error.message?.includes('not authenticated')) {
+        mensagem = 'Você precisa estar logado para adicionar produtos ao carrinho.';
+      } else if (error.message?.includes('permission denied') || error.message?.includes('policy')) {
+        mensagem = 'Erro de permissão. Execute o script fix-cart-table.sql no Supabase para corrigir as políticas RLS.';
+      }
+      
+      alert(mensagem);
+    }
   }
 
   get cartItemCount(): number {

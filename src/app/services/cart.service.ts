@@ -1,14 +1,18 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { Product } from '../models/product';
 import { CartItem } from '../models/cart-item';
+import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
+  private supabaseService = inject(SupabaseService);
   private cartItems = signal<CartItem[]>([]);
   private cep = signal<string>('');
+  private isLoading = signal<boolean>(false);
 
   // Computed signals
   items = this.cartItems.asReadonly();
+  loading = this.isLoading.asReadonly();
   
   subtotal = computed(() => {
     return this.cartItems().reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
@@ -35,59 +39,97 @@ export class CartService {
     return this.cartItems().reduce((sum, item) => sum + item.quantity, 0);
   });
 
-  // Add product to cart
-  addToCart(product: Product): void {
-    const currentItems = this.cartItems();
-    const existingItem = currentItems.find(item => item.product.id === product.id);
+  constructor() {
+    // Carrega o carrinho quando o usuário logar
+    effect(() => {
+      const user = this.supabaseService.user();
+      if (user) {
+        this.loadCart();
+      } else {
+        this.cartItems.set([]);
+      }
+    });
+  }
 
-    if (existingItem) {
-      // Increment quantity if product already exists
-      this.cartItems.set(
-        currentItems.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
-      );
-    } else {
-      // Add new item with quantity 1
-      this.cartItems.set([...currentItems, { product, quantity: 1 }]);
+  // Load cart from database
+  async loadCart(): Promise<void> {
+    try {
+      this.isLoading.set(true);
+      const items = await this.supabaseService.getCartItems();
+      
+      const cartItems: CartItem[] = items.map((item: any) => ({
+        id: item.id,
+        product: item.products,
+        quantity: item.quantity
+      }));
+      
+      this.cartItems.set(cartItems);
+    } catch (error) {
+      console.error('Erro ao carregar carrinho:', error);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  // Add product to cart
+  async addToCart(product: Product): Promise<void> {
+    try {
+      await this.supabaseService.addToCart(product.id!, 1);
+      await this.loadCart();
+    } catch (error) {
+      console.error('Erro ao adicionar ao carrinho:', error);
+      throw error;
     }
   }
 
   // Increment quantity
-  incrementQuantity(productId: number): void {
-    this.cartItems.set(
-      this.cartItems().map(item =>
-        item.product.id === productId
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
-    );
+  async incrementQuantity(productId: number): Promise<void> {
+    const item = this.cartItems().find(i => i.product.id === productId);
+    if (!item || !item.id) return;
+
+    try {
+      await this.supabaseService.updateCartItemQuantity(item.id, item.quantity + 1);
+      await this.loadCart();
+    } catch (error) {
+      console.error('Erro ao incrementar quantidade:', error);
+    }
   }
 
   // Decrement quantity (minimum 1)
-  decrementQuantity(productId: number): void {
-    this.cartItems.set(
-      this.cartItems().map(item =>
-        item.product.id === productId && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
+  async decrementQuantity(productId: number): Promise<void> {
+    const item = this.cartItems().find(i => i.product.id === productId);
+    if (!item || !item.id || item.quantity <= 1) return;
+
+    try {
+      await this.supabaseService.updateCartItemQuantity(item.id, item.quantity - 1);
+      await this.loadCart();
+    } catch (error) {
+      console.error('Erro ao decrementar quantidade:', error);
+    }
   }
 
   // Remove item from cart
-  removeItem(productId: number): void {
-    this.cartItems.set(
-      this.cartItems().filter(item => item.product.id !== productId)
-    );
+  async removeItem(productId: number): Promise<void> {
+    const item = this.cartItems().find(i => i.product.id === productId);
+    if (!item || !item.id) return;
+
+    try {
+      await this.supabaseService.removeFromCart(item.id);
+      await this.loadCart();
+    } catch (error) {
+      console.error('Erro ao remover item:', error);
+    }
   }
 
   // Clear cart
-  clearCart(): void {
-    this.cartItems.set([]);
-    this.cep.set('');
+  async clearCart(): Promise<void> {
+    try {
+      await this.supabaseService.clearCart();
+      this.cartItems.set([]);
+      this.cep.set('');
+    } catch (error) {
+      console.error('Erro ao limpar carrinho:', error);
+    }
   }
 
   // Set CEP

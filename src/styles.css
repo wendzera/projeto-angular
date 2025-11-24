@@ -168,3 +168,22 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-green);
 }
+
+/* Snackbar styles */
+::ng-deep .success-snackbar {
+  background-color: var(--success-green) !important;
+  color: white !important;
+}
+
+::ng-deep .success-snackbar .mat-mdc-button {
+  color: white !important;
+}
+
+::ng-deep .error-snackbar {
+  background-color: #dc2626 !important;
+  color: white !important;
+}
+
+::ng-deep .error-snackbar .mat-mdc-button {
+  color: white !important;
+}
