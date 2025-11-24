@@ -56,6 +56,91 @@ INSERT INTO products (name, description, price, "imageUrl") VALUES
 SELECT * FROM products ORDER BY "createdAt" DESC;
 
 -- ============================================
+-- 6. CRIAR A TABELA ORDERS
+-- ============================================
+CREATE TABLE IF NOT EXISTS orders (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  total NUMERIC(10, 2) NOT NULL,
+  status TEXT DEFAULT 'pending',
+  customer_name TEXT NOT NULL,
+  customer_email TEXT NOT NULL,
+  customer_phone TEXT,
+  customer_address TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 7. CRIAR A TABELA ORDER_ITEMS
+-- ============================================
+CREATE TABLE IF NOT EXISTS order_items (
+  id BIGSERIAL PRIMARY KEY,
+  order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  quantity INTEGER NOT NULL CHECK (quantity > 0),
+  price NUMERIC(10, 2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. HABILITAR RLS PARA ORDERS
+-- ============================================
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+
+-- Política para SELECT (leitura) - usuários podem ver apenas seus próprios pedidos
+CREATE POLICY "Users can view their own orders" ON orders
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Política para INSERT (inserção) - usuários podem criar seus próprios pedidos
+CREATE POLICY "Users can create their own orders" ON orders
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Política para UPDATE (atualização) - usuários podem atualizar seus próprios pedidos
+CREATE POLICY "Users can update their own orders" ON orders
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- 9. HABILITAR RLS PARA ORDER_ITEMS
+-- ============================================
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+
+-- Política para SELECT (leitura) - usuários podem ver itens de seus próprios pedidos
+CREATE POLICY "Users can view their own order items" ON order_items
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid()
+    )
+  );
+
+-- Política para INSERT (inserção) - usuários podem criar itens de seus próprios pedidos
+CREATE POLICY "Users can create their own order items" ON order_items
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid()
+    )
+  );
+
+-- 10. CRIAR ÍNDICES PARA MELHOR PERFORMANCE
+-- ============================================
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+
+-- 11. FUNÇÃO PARA ATUALIZAR updated_at AUTOMATICAMENTE
+-- ============================================
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_orders_updated_at
+  BEFORE UPDATE ON orders
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
 -- INSTRUÇÕES DE USO
 -- ============================================
 -- 1. Acesse o painel do Supabase: https://supabase.com/dashboard
